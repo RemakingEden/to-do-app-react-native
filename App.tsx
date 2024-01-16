@@ -1,118 +1,87 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text, FlatList, StyleSheet } from 'react-native';
+import CheckBox from '@react-native-community/checkbox';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+type Task = {
+  text: string;
+  completed: boolean;
+};
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const App: React.FC = () => {
+  const [task, setTask] = useState<string>('');
+  const [taskList, setTaskList] = useState<Task[]>([]);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  const addTask = (): void => {
+    if (task.trim().length > 0) {
+      setTaskList([...taskList, { text: task, completed: false }]);
+      setTask('');
+    }
+  };
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const toggleTaskCompletion = (index: number): void => {
+    const newTaskList = [...taskList];
+    newTaskList[index].completed = !newTaskList[index].completed;
+    setTaskList(newTaskList);
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <View style={styles.container} testID="add-task-view">
+      <TextInput
+        placeholder="Enter a task"
+        testID="task-text-input"
+        value={task}
+        onChangeText={setTask}
+        style={styles.textInput}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <Button title="Add Task" onPress={addTask} testID="add-task-button" />
+      <FlatList
+        data={taskList}
+        renderItem={({ item, index }) => (
+          <View style={styles.listItem}>
+            <CheckBox
+              value={item.completed}
+              onValueChange={() => toggleTaskCompletion(index)}
+            />
+            <Text
+              style={[
+                styles.taskText,
+                item.completed ? styles.completedTask : {}
+              ]}
+              testID="task-item"
+            >
+              {item.text}
+            </Text>
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    padding: 40,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginBottom: 10,
+    paddingHorizontal: 8,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
   },
-  highlight: {
-    fontWeight: '700',
+  taskText: {
+    padding: 10,
+    backgroundColor: '#ccc',
+  },
+  completedTask: {
+    textDecorationLine: 'line-through',
   },
 });
 
 export default App;
+
